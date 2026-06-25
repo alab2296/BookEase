@@ -1,0 +1,57 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // User Profiles
+    match /users/{userId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Businesses
+    match /businesses/{businessId} {
+      allow read: if true;
+      allow create: if request.auth != null;
+      allow update, delete: if request.auth != null &&
+        resource.data.ownerId == request.auth.uid;
+    }
+
+    // Services
+    match /services/{serviceId} {
+      allow read: if true;
+      allow write: if request.auth != null &&
+        get(/databases/$(database)/documents/businesses/$(request.resource.data.businessId)).data.ownerId == request.auth.uid;
+    }
+
+    // Appointments (Bookings)
+    match /appointments/{appointmentId} {
+      allow read: if request.auth != null && (
+        resource.data.customerId == request.auth.uid ||
+        resource.data.ownerId == request.auth.uid
+      );
+      allow create: if request.auth != null;
+      allow update: if request.auth != null && (
+        // Customer can cancel or update their own
+        (resource.data.customerId == request.auth.uid) ||
+        // Owner can accept/reject/complete
+        (resource.data.ownerId == request.auth.uid)
+      );
+    }
+
+    // Reviews
+    match /reviews/{reviewId} {
+      allow read: if true;
+      allow create: if request.auth != null &&
+        request.resource.data.customerId == request.auth.uid;
+      allow update, delete: if request.auth != null &&
+        resource.data.customerId == request.auth.uid;
+    }
+
+    // Notifications
+    match /notifications/{notificationId} {
+      allow read, update: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow create: if request.auth != null; // Typically handled by backend, but allowing app to log if needed
+    }
+  }
+}
