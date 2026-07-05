@@ -20,7 +20,7 @@
 
 <p align="center">
   <img src="assets/screenshots/login.png" width="18%" alt="Login"/>
-  <img src="assets/screenshots/register.png" width="18%" alt="Register"/>
+  <img src="assets/screenshots/home.png" width="18%" alt="Home"/>
   <img src="assets/screenshots/detail.png" width="18%" alt="Business Detail"/>
   <img src="assets/screenshots/booking.png" width="18%" alt="Book Appointment"/>
   <img src="assets/screenshots/history.png" width="18%" alt="My Bookings"/>
