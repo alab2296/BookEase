@@ -35,7 +35,7 @@ class NotificationHelper @Inject constructor(
 
     fun showNotification(title: String, message: String) {
         val builder = NotificationCompat.Builder(context, channelId)
-            .setSmallIcon(R.mipmap.ic_launcher)
+            .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle(title)
             .setContentText(message)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)

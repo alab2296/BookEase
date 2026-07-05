@@ -23,7 +23,8 @@ data class Appointment(
     @get:PropertyName("status")
     @set:PropertyName("status")
     var status: String = "PENDING",
-    val timestamp: Long = System.currentTimeMillis()
+    val timestamp: Long = System.currentTimeMillis(),
+    val reviewed: Boolean = false
 ) {
     @get:Exclude
     val statusEnum: AppointmentStatus

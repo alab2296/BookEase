@@ -11,6 +11,9 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 
 @HiltViewModel
 class BookingHistoryViewModel @Inject constructor(
@@ -21,6 +24,11 @@ class BookingHistoryViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow<BookingHistoryUiState>(BookingHistoryUiState.Loading)
     val uiState: StateFlow<BookingHistoryUiState> = _uiState.asStateFlow()
+
+    var reviewMessage: String? by mutableStateOf(null)
+        private set
+
+    fun clearReviewMessage() { reviewMessage = null }
 
     init {
         loadHistory()
@@ -38,7 +46,7 @@ class BookingHistoryViewModel @Inject constructor(
             .launchIn(viewModelScope)
     }
 
-    fun submitReview(businessId: String, rating: Float, comment: String) {
+    fun submitReview(appointmentId: String, businessId: String, rating: Float, comment: String) {
         val userId = auth.currentUser?.uid ?: return
         viewModelScope.launch {
             val review = Review(
@@ -47,7 +55,8 @@ class BookingHistoryViewModel @Inject constructor(
                 rating = rating,
                 comment = comment
             )
-            reviewRepository.addReview(review)
+            val result = reviewRepository.addReview(review, appointmentId)
+            reviewMessage = if (result.isSuccess) "Review submitted!" else "Failed to submit review"
         }
     }
 

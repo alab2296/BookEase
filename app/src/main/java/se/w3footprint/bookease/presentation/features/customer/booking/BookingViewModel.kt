@@ -119,16 +119,21 @@ class BookingViewModel @Inject constructor(
     }
 
     private fun isBefore(time1: String, time2: String): Boolean {
-        if (time1.isEmpty() || time2.isEmpty()) return false
-        val t1 = time1.split(":").map { it.toInt() }
-        val t2 = time2.split(":").map { it.toInt() }
-        return t1[0] < t2[0] || (t1[0] == t2[0] && t1[1] < t2[1])
+        val t1 = time1.split(":")
+        val t2 = time2.split(":")
+        if (t1.size < 2 || t2.size < 2) return false
+        val h1 = t1[0].toIntOrNull() ?: return false
+        val m1 = t1[1].toIntOrNull() ?: return false
+        val h2 = t2[0].toIntOrNull() ?: return false
+        val m2 = t2[1].toIntOrNull() ?: return false
+        return h1 < h2 || (h1 == h2 && m1 < m2)
     }
 
     private fun addMinutes(time: String, minutes: Int): String {
-        val t = time.split(":").map { it.toInt() }
-        var h = t[0]
-        var m = t[1] + minutes
+        val parts = time.split(":")
+        if (parts.size < 2) return time
+        var h = parts[0].toIntOrNull() ?: return time
+        var m = (parts[1].toIntOrNull() ?: return time) + minutes
         h += m / 60
         m %= 60
         return String.format(Locale.getDefault(), "%02d:%02d", h, m)

@@ -13,8 +13,10 @@ class ReviewRepositoryImpl @Inject constructor(
     private val firestore: FirebaseFirestore
 ) : ReviewRepository {
 
-    override suspend fun addReview(review: Review): Result<Unit> = try {
-        firestore.collection("reviews").add(review).await()
+    override suspend fun addReview(review: Review, appointmentId: String): Result<Unit> = try {
+        firestore.collection("reviews").document(appointmentId).set(review).await()
+        firestore.collection("bookings").document(appointmentId)
+            .update("reviewed", true).await()
         updateBusinessRating(review.businessId)
         Result.success(Unit)
     } catch (e: Exception) {

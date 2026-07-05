@@ -126,14 +126,15 @@ class BookingHistoryViewModelTest {
         every { auth.currentUser } returns mockUser
         every { mockUser.uid } returns "user1"
         every { bookingRepository.getBookingsForCustomer("user1") } returns flowOf(emptyList())
-        coEvery { reviewRepository.addReview(any()) } returns Result.success(Unit)
+        coEvery { reviewRepository.addReview(any(), any()) } returns Result.success(Unit)
 
         val viewModel = buildViewModel()
-        viewModel.submitReview("biz1", 4.5f, "Great service")
+        viewModel.submitReview("appt1", "biz1", 4.5f, "Great service")
 
         coVerify {
             reviewRepository.addReview(
-                match { it.customerId == "user1" && it.businessId == "biz1" && it.rating == 4.5f && it.comment == "Great service" }
+                match { it.customerId == "user1" && it.businessId == "biz1" && it.rating == 4.5f && it.comment == "Great service" },
+                "appt1"
             )
         }
     }
@@ -143,9 +144,9 @@ class BookingHistoryViewModelTest {
         every { auth.currentUser } returns null
 
         val viewModel = buildViewModel()
-        viewModel.submitReview("biz1", 5f, "Perfect")
+        viewModel.submitReview("appt1", "biz1", 5f, "Perfect")
 
-        coVerify(exactly = 0) { reviewRepository.addReview(any()) }
+        coVerify(exactly = 0) { reviewRepository.addReview(any(), any()) }
     }
 
     @Test

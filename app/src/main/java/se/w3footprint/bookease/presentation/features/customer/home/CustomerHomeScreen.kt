@@ -251,6 +251,14 @@ private fun BookingsTab(viewModel: BookingHistoryViewModel = hiltViewModel()) {
     val uiState by viewModel.uiState.collectAsState()
     var showReviewDialog by remember { mutableStateOf<Appointment?>(null) }
     var showDeleteDialog by remember { mutableStateOf<Appointment?>(null) }
+    val context = LocalContext.current
+
+    LaunchedEffect(viewModel.reviewMessage) {
+        viewModel.reviewMessage?.let { msg ->
+            Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+            viewModel.clearReviewMessage()
+        }
+    }
 
     Box(modifier = Modifier.fillMaxSize()) {
         when (val state = uiState) {
@@ -314,7 +322,7 @@ private fun BookingsTab(viewModel: BookingHistoryViewModel = hiltViewModel()) {
             ReviewDialog(
                 onDismiss = { showReviewDialog = null },
                 onSubmit = { rating, comment ->
-                    viewModel.submitReview(appointment.ownerId, rating, comment)
+                    viewModel.submitReview(appointment.id, appointment.ownerId, rating, comment)
                     showReviewDialog = null
                 }
             )

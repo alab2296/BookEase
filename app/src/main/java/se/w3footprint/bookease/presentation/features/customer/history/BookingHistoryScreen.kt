@@ -8,15 +8,18 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.StarOutline
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import android.widget.Toast
 import se.w3footprint.bookease.domain.model.Appointment
 import se.w3footprint.bookease.domain.model.AppointmentStatus
 import se.w3footprint.bookease.ui.components.InfoRow
@@ -31,6 +34,14 @@ fun BookingHistoryScreen(
     val uiState by viewModel.uiState.collectAsState()
     var showReviewDialog by remember { mutableStateOf<Appointment?>(null) }
     var showDeleteConfirmDialog by remember { mutableStateOf<Appointment?>(null) }
+    val context = LocalContext.current
+
+    LaunchedEffect(viewModel.reviewMessage) {
+        viewModel.reviewMessage?.let { msg ->
+            Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+            viewModel.clearReviewMessage()
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -105,7 +116,7 @@ fun BookingHistoryScreen(
             ReviewDialog(
                 onDismiss = { showReviewDialog = null },
                 onSubmit = { rating, comment ->
-                    viewModel.submitReview(appointment.ownerId, rating, comment)
+                    viewModel.submitReview(appointment.id, appointment.ownerId, rating, comment)
                     showReviewDialog = null
                 }
             )
@@ -115,7 +126,7 @@ fun BookingHistoryScreen(
 
 @Composable
 fun ReviewDialog(onDismiss: () -> Unit, onSubmit: (Float, String) -> Unit) {
-    var rating by remember { mutableFloatStateOf(5f) }
+    var rating by remember { mutableIntStateOf(5) }
     var comment by remember { mutableStateOf("") }
 
     AlertDialog(
@@ -124,24 +135,31 @@ fun ReviewDialog(onDismiss: () -> Unit, onSubmit: (Float, String) -> Unit) {
         text = {
             Column {
                 Text("How was the service?")
-                Slider(
-                    value = rating,
-                    onValueChange = { rating = it },
-                    valueRange = 1f..5f,
-                    steps = 3
-                )
-                Text("Rating: ${rating.toInt()} Stars")
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
+                    (1..5).forEach { star ->
+                        IconButton(onClick = { rating = star }) {
+                            Icon(
+                                imageVector = if (star <= rating) Icons.Filled.Star else Icons.Outlined.StarOutline,
+                                contentDescription = "$star stars",
+                                tint = if (star <= rating) Color(0xFFFFC107) else MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.size(32.dp)
+                            )
+                        }
+                    }
+                }
                 Spacer(modifier = Modifier.height(8.dp))
                 OutlinedTextField(
                     value = comment,
                     onValueChange = { comment = it },
                     label = { Text("Comment (optional)") },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    minLines = 2
                 )
             }
         },
         confirmButton = {
-            Button(onClick = { onSubmit(rating, comment) }) {
+            Button(onClick = { onSubmit(rating.toFloat(), comment) }) {
                 Text("Submit")
             }
         },
@@ -220,7 +238,7 @@ fun HistoryItem(
                     }
                 }
 
-                if (booking.statusEnum == AppointmentStatus.COMPLETED) {
+                if (booking.statusEnum == AppointmentStatus.COMPLETED && !booking.reviewed) {
                     Spacer(modifier = Modifier.width(8.dp))
                     Button(
                         onClick = onRate,
@@ -228,6 +246,13 @@ fun HistoryItem(
                     ) {
                         Text("Rate & Review")
                     }
+                } else if (booking.statusEnum == AppointmentStatus.COMPLETED && booking.reviewed) {
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Reviewed",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
                 }
             }
         }
