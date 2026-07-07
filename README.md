@@ -143,7 +143,7 @@ firebase deploy --only functions
 
 ## Related
 
-[**BookEase Blockchain**](https://github.com/alab2296/bookease-blockchain) — a companion project exploring the same booking domain with a different architecture: trustless payment escrow via an Ethereum smart contract (Solidity · React · Hardhat). No backend, no platform — just code enforcing the rules.
+[**BookEase Blockchain**](https://github.com/w3footprint/bookease-blockchain) — a companion project exploring the same booking domain with a different architecture: trustless payment escrow via an Ethereum smart contract (Solidity · React · Hardhat). No backend, no platform — just code enforcing the rules.
 
 ---
 
